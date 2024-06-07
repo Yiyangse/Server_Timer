@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30분 타이머</title>
+    <style>
+        /* 스타일 정의 */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #server-time, #timer {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 서버 시간 및 타이머 표시 영역 -->
+    <div id="server-time"></div>
+    <div id="timer">30:00</div>
+    <!-- 버튼들 -->
+    <button onclick="startTimer()">30분 타이머</button>
+    <button onclick="pauseTimer()">Pause</button>
+    <button onclick="resetTimer()">Reset</button>
+
+    <script>
+        /* JavaScript 코드 */
+        let countdown;  // 타이머 간격 저장
+        let isPaused = false;  // 타이머 일시 정지 상태
+        let remainingTime = 30 * 60;  // 남은 시간 (초 단위)
+
+        // 타이머 시작 함수
+        function startTimer() {
+            if (isPaused) {
+                isPaused = false;  // 일시 정지 해제
+                return;
+            }
+
+            const timerDisplay = document.getElementById('timer');
+            const now = Date.now();
+            const then = now + remainingTime * 1000;  // 목표 시간 계산
+
+            displayTimeLeft(remainingTime);  // 남은 시간 표시
+
+            clearInterval(countdown);  // 기존 타이머 제거
+
+            countdown = setInterval(() => {
+                if (isPaused) return;  // 일시 정지 상태일 경우 중단
+
+                const secondsLeft = Math.round((then - Date.now()) / 1000);
+
+                if (secondsLeft <= 0) {
+                    clearInterval(countdown);  // 타이머 완료 시 중단
+                    return;
+                }
+
+                remainingTime = secondsLeft;
+                displayTimeLeft(secondsLeft);  // 남은 시간 표시
+            }, 1000);
+        }
+
+        // 타이머 일시 정지 함수
+        function pauseTimer() {
+            isPaused = true;  // 일시 정지 상태로 변경
+            clearInterval(countdown);  // 타이머 중단
+        }
+
+        // 타이머 초기화 함수
+        function resetTimer() {
+            clearInterval(countdown);  // 기존 타이머 제거
+            isPaused = false;
+            remainingTime = 30 * 60;  // 남은 시간 초기화
+            document.getElementById('timer').textContent = "30:00";  // 초기 시간 표시
+        }
+
+        // 남은 시간 표시 함수
+        function displayTimeLeft(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainderSeconds = seconds % 60;
+            const display = `${minutes}:${remainderSeconds < 10 ? '0' : ''}${remainderSeconds}`;
+            document.getElementById('timer').textContent = display;
+        }
+
+        // 서버 시간 업데이트 함수
+        function updateServerTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const displayTime = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            document.getElementById('server-time').textContent = displayTime;
+        }
+
+        setInterval(updateServerTime, 1000);  // 매초 서버 시간 업데이트
+    </script>
+</body>
+</html>
